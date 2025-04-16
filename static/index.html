@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Filtrage des champions</title>
+  <title>Counter craft</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
     tailwind.config = {
@@ -22,7 +22,7 @@
     <input id="searchInput" type="text" placeholder="Tape un nom..."
       class="w-full mb-4 p-2 rounded bg-gray-800 text-white" />
 
-    <div class="flex justify-around mb-6">
+    <div class="flex justify-around mb-6" style="display: none;">
       <img src="top_icon_url" alt="Top" class="role-icon w-12" data-role="Top" />
       <img src="jungle_icon_url" alt="Jungle" class="role-icon w-12" data-role="Jungle" />
       <img src="middle_icon_url" alt="Mid" class="role-icon w-12" data-role="Middle" />
@@ -63,7 +63,7 @@
         </div>
         <div>
           <label for="counterNote" class="block mb-1">Note :</label>
-          <input type="text" id="counterNote" class="w-full bg-gray-700 text-white p-2 rounded" placeholder="Pourquoi c'est un counter ?" />
+          <input maxlength="44" type="text" id="counterNote" class="w-full bg-gray-700 text-white p-2 rounded" placeholder="Pourquoi c'est un counter ?" />
         </div>
         <div>
           <label for="counterOrder" class="block mb-1">Ordre (1 à 3) :</label>
