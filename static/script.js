@@ -19,7 +19,7 @@ const addCounterForm = document.getElementById('addCounterForm');
 
 let selectedChampion = null;
 let fakeCounters = {}; 
-const apiUrl = "https://ton-app.onrender.com";
+const apiUrl = "https://countercraft.onrender.com";
 
 
 async function loadChampions() {
