@@ -1,0 +1,34 @@
+.dark .ts-wrapper {
+    background-color: #1f2937 !important; /* bg-gray-800 */
+    color: #fff !important;
+    border-color: #4b5563 !important; /* border-gray-600 */
+  }
+  
+  .dark .ts-control {
+    background-color: #1f2937 !important;
+    color: #fff !important;
+    border-color: #4b5563 !important;
+  }
+  
+  .dark .ts-control input {
+    color: #fff !important;
+  }
+  
+  .dark .ts-dropdown,
+  .dark .ts-dropdown .ts-dropdown-content {
+    background-color: #1f2937 !important;
+    color: #fff !important;
+  }
+  
+  .dark .ts-dropdown .option {
+    color: #fff !important;
+  }
+  
+  .dark .ts-dropdown .active {
+    background-color: #374151 !important; /* bg-gray-700 */
+  }
+  
+  .dark .ts-dropdown .option:hover {
+    background-color: #4b5563 !important; /* hover */
+  }
+  

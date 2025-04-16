@@ -19,6 +19,8 @@ const addCounterForm = document.getElementById('addCounterForm');
 
 let selectedChampion = null;
 let fakeCounters = {}; 
+const apiUrl = "http://localhost:8000"; // a changer
+
 
 async function loadChampions() {
   const res = await fetch(ddragonURL);
@@ -43,6 +45,18 @@ function updateChampionList() {
     </div>
   `).join('');
 }
+
+async function deleteCounter(champion, counterName) {
+  const confirmed = confirm(`Supprimer ${counterName} comme counter ?`);
+  if (!confirmed) return;
+
+  await fetch(`${apiUrl}/counters/${champion}/${counterName}`, {
+    method: "DELETE"
+  });
+
+  renderCounters(champion);
+}
+
 
 document.querySelectorAll('.role-icon').forEach(icon => {
   icon.addEventListener('click', () => {
@@ -72,19 +86,29 @@ function closeModal() {
   modal.classList.remove('flex');
 }
 
-function renderCounters(championName) {
-  const counters = (fakeCounters[championName] || []).sort((a, b) => a.order - b.order);
 
-  modalCounters.innerHTML = counters.map(counter => `
-    <div class="flex items-center bg-gray-700 p-2 rounded">
-      <img src="${iconBaseURL + counter.name + '.png'}" alt="${counter.name}" class="w-10 h-10 rounded mr-3" />
-      <div>
-        <p class="font-semibold">${counter.name}</p>
-        ${counter.comment ? `<p class="text-sm text-gray-300">${counter.comment}</p>` : ''}
+
+async function renderCounters(championName) {
+    const res = await fetch(`${apiUrl}/counters/${championName}`);
+    const counters = await res.json();
+  
+    modalCounters.innerHTML = counters
+    .sort((a, b) => a.order - b.order)
+    .map(counter => `
+      <div class="flex items-center justify-between bg-gray-700 p-2 rounded">
+        <div class="flex items-center">
+          <img src="${iconBaseURL + counter.name + '.png'}" alt="${counter.name}" class="w-10 h-10 rounded mr-3" />
+          <div>
+            <p class="font-semibold">${counter.name}</p>
+            ${counter.comment ? `<p class="text-sm text-gray-300">${counter.comment}</p>` : ''}
+          </div>
+        </div>
+        <button onclick="deleteCounter('${selectedChampion.name}', '${counter.name}')" class="text-red-400 hover:text-red-600 text-lg">✖</button>
       </div>
-    </div>
-  `).join('');
+    `).join('');
 }
+  
+
 
 addCounterBtn.addEventListener('click', () => {
   counterNoteInput.value = '';
@@ -124,25 +148,30 @@ function populateCounterSelect() {
 }
 
 
-addCounterForm.addEventListener('submit', (e) => {
+addCounterForm.addEventListener('submit', async (e) => {
   e.preventDefault();
 
   const counterName = counterChampionSelect.value;
   const counterText = counterNoteInput.value.trim();
   const order = parseInt(counterOrderSelect.value);
 
-  if (!fakeCounters[selectedChampion.name]) {
-    fakeCounters[selectedChampion.name] = [];
-  }
-
-  fakeCounters[selectedChampion.name].push({
+  const payload = {
     name: counterName,
     comment: counterText,
     order
+  };
+
+  await fetch(`${apiUrl}/counters/${selectedChampion.name}`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload)
   });
 
   closeAddCounterModal();
   renderCounters(selectedChampion.name);
 });
+
+
+
 
 loadChampions();
