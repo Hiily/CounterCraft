@@ -2,8 +2,19 @@ from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 from fastapi.middleware.cors import CORSMiddleware
-import json
 from pathlib import Path
+import psycopg2
+import os
+from psycopg2.extras import RealDictCursor
+from dotenv import load_dotenv
+
+load_dotenv()
+
+
+
+DATABASE_URL = os.getenv("DATABASE_URL")
+conn = psycopg2.connect(DATABASE_URL, cursor_factory=RealDictCursor)
+
 
 app = FastAPI()
 
@@ -22,46 +33,46 @@ app.mount("/static", StaticFiles(directory="static"), name="static")
 def serve_index():
     return FileResponse("static/index.html")
 
-DATA_FILE = Path("counters.json")
 
-def load_data():
-    if DATA_FILE.exists():
-        return json.loads(DATA_FILE.read_text(encoding="utf-8"))
-    return {}
 
-def save_data(data):
-    DATA_FILE.write_text(json.dumps(data, indent=2, ensure_ascii=False), encoding="utf-8")
 
 @app.get("/counters/{champion}")
 def get_counters(champion: str):
-    data = load_data()
-    return data.get(champion, [])
+    with conn.cursor() as cur:
+        cur.execute("""
+            SELECT name, comment, rank
+            FROM counters
+            WHERE champion = %s
+            ORDER BY rank ASC;
+        """, (champion,))
+        return cur.fetchall()
+
 
 @app.post("/counters/{champion}")
 def add_counter(champion: str, new_counter: dict):
-    data = load_data()
-    counters = data.get(champion, [])
+    with conn.cursor() as cur:
+        cur.execute("""
+            INSERT INTO counters (champion, name, comment, rank)
+            VALUES (%s, %s, %s, %s)
+            ON CONFLICT (champion, name) DO UPDATE
+            SET comment = EXCLUDED.comment,
+                rank = EXCLUDED.rank;
+        """, (
+            champion,
+            new_counter.get("name"),
+            new_counter.get("comment"),
+            new_counter.get("order")
+        ))
+        conn.commit()
+    return {"message": "Counter enregistré"}
 
-    # vérifier s'il existe déjà un counter avec le même nom
-    for c in counters:
-        if c["name"] == new_counter["name"]:
-            # mettre à jour l'existant
-            c.update(new_counter)
-            break
-    else:
-        counters.append(new_counter)
-
-    data[champion] = counters
-    save_data(data)
-    return {"message": "Counter enregistré", "data": counters}
 
 @app.delete("/counters/{champion}/{counter_name}")
 def delete_counter(champion: str, counter_name: str):
-    data = load_data()
-    counters = data.get(champion, [])
-
-    new_counters = [c for c in counters if c["name"] != counter_name]
-    data[champion] = new_counters
-    save_data(data)
-    return {"message": f"Counter {counter_name} supprimé pour {champion}"}
-
+    with conn.cursor() as cur:
+        cur.execute("""
+            DELETE FROM counters
+            WHERE champion = %s AND name = %s;
+        """, (champion, counter_name))
+        conn.commit()
+    return {"message": f"Counter '{counter_name}' supprimé pour {champion}"}
