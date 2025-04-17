@@ -155,20 +155,39 @@ addCounterForm.addEventListener('submit', async (e) => {
   const counterText = counterNoteInput.value.trim();
   const rank = parseInt(counterOrderSelect.value);
 
+  if (!counterName || isNaN(rank)) {
+    alert("Merci de remplir tous les champs correctement.");
+    return;
+  }
+
   const payload = {
     name: counterName,
     comment: counterText,
-    rank
+    rank: rank
   };
 
-  await fetch(`${apiUrl}/counters/${selectedChampion.name}`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload)
-  });
 
-  closeAddCounterModal();
-  renderCounters(selectedChampion.name);
+  try {
+    const response = await fetch(`${apiUrl}/counters/${selectedChampion.name}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      console.error("❌ Erreur API :", errorData);
+      alert("Erreur lors de l'enregistrement du counter !");
+      return;
+    }
+
+    closeAddCounterModal();
+    renderCounters(selectedChampion.name);
+
+  } catch (error) {
+    console.error("❌ Erreur réseau :", error);
+    alert("Erreur de communication avec le serveur.");
+  }
 });
 
 

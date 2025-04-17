@@ -5,10 +5,15 @@ from fastapi.middleware.cors import CORSMiddleware
 import os
 import psycopg2
 from psycopg2.extras import RealDictCursor
+from dotenv import load_dotenv
+
+# Charge les variables d'env (notamment DATABASE_URL)
+load_dotenv()
+
 
 app = FastAPI()
 
-# CORS pour frontend
+# Middleware CORS
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -23,13 +28,14 @@ app.mount("/static", StaticFiles(directory="static"), name="static")
 def serve_index():
     return FileResponse("static/index.html")
 
-# Connexion PostgreSQL
+# Connexion à PostgreSQL
 DATABASE_URL = os.getenv("DATABASE_URL")
 if not DATABASE_URL:
     raise RuntimeError("DATABASE_URL is not set.")
 
 conn = psycopg2.connect(DATABASE_URL, cursor_factory=RealDictCursor)
 
+# GET - Récupérer les counters d'un champion
 @app.get("/counters/{champion}")
 def get_counters(champion: str):
     try:
@@ -45,28 +51,38 @@ def get_counters(champion: str):
         conn.rollback()
         raise HTTPException(status_code=500, detail=f"Erreur DB (GET): {str(e)}")
 
+# POST - Ajouter ou mettre à jour un counter
 @app.post("/counters/{champion}")
 def add_counter(champion: str, new_counter: dict):
+
     try:
         with conn.cursor() as cur:
+            # Supprimer l'ancien si existant
+            cur.execute("""
+                DELETE FROM counters WHERE champion = %s AND name = %s;
+            """, (
+                champion,
+                new_counter.get("name")
+            ))
+
+            # Ajouter le nouveau
             cur.execute("""
                 INSERT INTO counters (champion, name, comment, rank)
-                VALUES (%s, %s, %s, %s)
-                ON CONFLICT (champion, name) DO UPDATE
-                SET comment = EXCLUDED.comment,
-                    rank = EXCLUDED.rank;
+                VALUES (%s, %s, %s, %s);
             """, (
                 champion,
                 new_counter.get("name"),
                 new_counter.get("comment"),
                 new_counter.get("rank")
             ))
+
             conn.commit()
         return {"message": "Counter enregistré"}
     except Exception as e:
         conn.rollback()
         raise HTTPException(status_code=500, detail=f"Erreur DB (POST): {str(e)}")
 
+# DELETE - Supprimer un counter
 @app.delete("/counters/{champion}/{counter_name}")
 def delete_counter(champion: str, counter_name: str):
     try:
