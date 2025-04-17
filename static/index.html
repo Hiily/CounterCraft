@@ -22,13 +22,14 @@
     <input id="searchInput" type="text" placeholder="Tape un nom..."
       class="w-full mb-4 p-2 rounded bg-gray-800 text-white" />
 
-    <div class="flex justify-around mb-6" style="display: none;">
-      <img src="top_icon_url" alt="Top" class="role-icon w-12" data-role="Top" />
-      <img src="jungle_icon_url" alt="Jungle" class="role-icon w-12" data-role="Jungle" />
-      <img src="middle_icon_url" alt="Mid" class="role-icon w-12" data-role="Middle" />
-      <img src="bottom_icon_url" alt="ADC" class="role-icon w-12" data-role="Bottom" />
-      <img src="support_icon_url" alt="Support" class="role-icon w-12" data-role="Support" />
-    </div>
+      <div class="flex justify-around mb-6">
+        <img src="/static/icon/All.png" alt="All" class="role-icon w-12" data-role="" />
+        <img src="/static/icon/Top.png" alt="Top" class="role-icon w-12" data-role="Top" />
+        <img src="/static/icon/Jungle.png" alt="Jungle" class="role-icon w-12" data-role="Jungle" />
+        <img src="/static/icon/Mid.png" alt="Mid" class="role-icon w-12" data-role="Mid" />
+        <img src="/static/icon/Bot.png" alt="ADC" class="role-icon w-12" data-role="Bot" />
+        <img src="/static/icon/Support.png" alt="Support" class="role-icon w-12" data-role="Support" />
+      </div>
 
     <div id="championList" class="grid grid-cols-6 gap-4"></div>
   </div>
@@ -73,6 +74,13 @@
             <option value="3">3</option>
           </select>
         </div>
+        <div>
+          <label for="counterForRole" class="block mb-1">Rôle ciblé (du champion à counter) :</label>
+          <select id="counterForRole" class="w-full bg-gray-700 text-white p-2 rounded">
+            <!-- rempli dynamiquement -->
+          </select>
+        </div>
+        
         <div class="text-right">
           <button type="submit" class="bg-green-600 hover:bg-green-700 px-4 py-2 rounded">✅ Ajouter</button>
         </div>

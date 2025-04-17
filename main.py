@@ -41,7 +41,7 @@ def get_counters(champion: str):
     try:
         with conn.cursor() as cur:
             cur.execute("""
-                SELECT name, comment, rank
+                SELECT name, comment, rank, role
                 FROM counters
                 WHERE champion = %s
                 ORDER BY rank ASC;
@@ -51,29 +51,31 @@ def get_counters(champion: str):
         conn.rollback()
         raise HTTPException(status_code=500, detail=f"Erreur DB (GET): {str(e)}")
 
+
 # POST - Ajouter ou mettre à jour un counter
 @app.post("/counters/{champion}")
 def add_counter(champion: str, new_counter: dict):
-
     try:
         with conn.cursor() as cur:
-            # Supprimer l'ancien si existant
+            # Supprimer l'existant
             cur.execute("""
-                DELETE FROM counters WHERE champion = %s AND name = %s;
+                DELETE FROM counters WHERE champion = %s AND name = %s AND role = %s;
             """, (
                 champion,
-                new_counter.get("name")
+                new_counter.get("name"),
+                new_counter.get("role")
             ))
 
-            # Ajouter le nouveau
+            # Insérer la nouvelle version
             cur.execute("""
-                INSERT INTO counters (champion, name, comment, rank)
-                VALUES (%s, %s, %s, %s);
+                INSERT INTO counters (champion, name, comment, rank, role)
+                VALUES (%s, %s, %s, %s, %s);
             """, (
                 champion,
                 new_counter.get("name"),
                 new_counter.get("comment"),
-                new_counter.get("rank")
+                new_counter.get("rank"),
+                new_counter.get("role")
             ))
 
             conn.commit()
@@ -82,17 +84,19 @@ def add_counter(champion: str, new_counter: dict):
         conn.rollback()
         raise HTTPException(status_code=500, detail=f"Erreur DB (POST): {str(e)}")
 
+
 # DELETE - Supprimer un counter
-@app.delete("/counters/{champion}/{counter_name}")
-def delete_counter(champion: str, counter_name: str):
+@app.delete("/counters/{champion}/{counter_name}/{role}")
+def delete_counter(champion: str, counter_name: str, role: str):
     try:
         with conn.cursor() as cur:
             cur.execute("""
                 DELETE FROM counters
-                WHERE champion = %s AND name = %s;
-            """, (champion, counter_name))
+                WHERE champion = %s AND name = %s AND role = %s;
+            """, (champion, counter_name, role))
             conn.commit()
-        return {"message": f"Counter '{counter_name}' supprimé pour {champion}"}
+        return {"message": f"Counter '{counter_name}' supprimé pour {champion} en {role}"}
     except Exception as e:
         conn.rollback()
         raise HTTPException(status_code=500, detail=f"Erreur DB (DELETE): {str(e)}")
+
