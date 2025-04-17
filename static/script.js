@@ -106,9 +106,13 @@ async function renderCounters(championName) {
 
   // Construire l'affichage
   modalCounters.innerHTML = Object.entries(grouped)
-    .map(([role, roleCounters]) => `
+  .map(([role, roleCounters]) => {
+    const iconRole = ["Top", "Jungle", "Mid", "Bot", "Support"].includes(role) ? role : "All";
+    return `
       <div class="mb-4">
-        <h3 class="text-lg font-bold text-white mb-2">Counters contre ${championName} en ${role}</h3>
+        <div class="flex items-center gap-2 mb-2">
+          <img src="/static/icon/${iconRole}.png" alt="${role}" class="w-6 h-6" />
+        </div>
         ${roleCounters
           .sort((a, b) => a.rank - b.rank)
           .map(counter => `
@@ -124,7 +128,9 @@ async function renderCounters(championName) {
             </div>
           `).join('')}
       </div>
-    `).join('');
+    `;
+  }).join('');
+
 }
 
 
