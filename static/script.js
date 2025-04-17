@@ -93,7 +93,7 @@ async function renderCounters(championName) {
     const counters = await res.json();
   
     modalCounters.innerHTML = counters
-    .sort((a, b) => a.order - b.order)
+    .sort((a, b) => a.rank - b.rank)
     .map(counter => `
       <div class="flex items-center justify-between bg-gray-700 p-2 rounded">
         <div class="flex items-center">
@@ -153,12 +153,12 @@ addCounterForm.addEventListener('submit', async (e) => {
 
   const counterName = counterChampionSelect.value;
   const counterText = counterNoteInput.value.trim();
-  const order = parseInt(counterOrderSelect.value);
+  const rank = parseInt(counterOrderSelect.value);
 
   const payload = {
     name: counterName,
     comment: counterText,
-    order
+    rank
   };
 
   await fetch(`${apiUrl}/counters/${selectedChampion.name}`, {
