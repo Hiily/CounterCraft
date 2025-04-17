@@ -59,7 +59,7 @@ def add_counter(champion: str, new_counter: dict):
                 champion,
                 new_counter.get("name"),
                 new_counter.get("comment"),
-                new_counter.get("order")
+                new_counter.get("rank")
             ))
             conn.commit()
         return {"message": "Counter enregistré"}
