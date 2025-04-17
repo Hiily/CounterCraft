@@ -226,3 +226,33 @@ addCounterForm.addEventListener('submit', async (e) => {
   await loadChampionRoles();
   await loadChampions();
 })();
+
+document.querySelectorAll('.role-icon').forEach(icon => {
+  icon.addEventListener('click', () => {
+    document.querySelectorAll('.role-icon').forEach(i => {
+      i.classList.remove(
+        "bg-emerald-600",
+        "bg-opacity-20",
+        "ring-2",
+        "ring-emerald-400",
+        "rounded-lg",
+        "p-1",
+        "scale-105"
+      );
+    });
+
+    icon.classList.add(
+      "bg-emerald-600",
+      "bg-opacity-20",
+      "ring-2",
+      "ring-emerald-400",
+      "rounded-lg",
+      "p-1",
+      "scale-105"
+    );
+
+    selectedRole = icon.dataset.role;
+    updateChampionList();
+  });
+});
+
