@@ -17,7 +17,7 @@
 </head>
 <body class="bg-gray-900 text-white p-6">
   <div class="max-w-5xl mx-auto">
-    <h1 class="text-3xl font-bold mb-6">🔍 Recherche de champions</h1>
+    <h1 class="text-3xl font-bold mb-6">🔍 Search for champions</h1>
 
     <input id="searchInput" type="text" placeholder="Tape un nom..."
       class="w-full mb-4 p-2 rounded bg-gray-800 text-white" />
@@ -43,7 +43,7 @@
       <div class="flex items-center mb-4">
         <img id="modalChampionIcon" src="" alt="Champion" class="w-16 h-16 rounded" />
         <button id="addCounterBtn" class="ml-4 bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded">
-          ➕ Ajouter counter
+          ➕ Add counter
         </button>
       </div>
       <div id="modalCounters" class="space-y-2">
@@ -56,10 +56,10 @@
   <div id="addCounterModal" class="fixed inset-0 bg-black bg-opacity-60 hidden items-center justify-center z-50">
     <div class="bg-gray-800 p-6 rounded-lg max-w-md w-full relative">
       <button onclick="closeAddCounterModal()" class="absolute top-2 right-2 text-white">✖</button>
-      <h2 class="text-xl font-bold mb-4">Ajouter un counter</h2>
+      <h2 class="text-xl font-bold mb-4">Add counter</h2>
       <form id="addCounterForm" class="space-y-4">
         <div>
-          <label for="counterChampion" class="block mb-1">Champion counter :</label>
+          <label for="counterChampion" class="block mb-1">Champion's counter :</label>
           <select id="counterChampion" class="w-full bg-gray-700 text-white p-2 rounded">
             <!-- Options remplies dynamiquement -->
           </select>
@@ -69,7 +69,7 @@
           <input maxlength="44" type="text" id="counterNote" class="w-full bg-gray-700 text-white p-2 rounded" placeholder="Pourquoi c'est un counter ?" />
         </div>
         <div>
-          <label for="counterOrder" class="block mb-1">Ordre (1 à 3) :</label>
+          <label for="counterOrder" class="block mb-1">Order (1 to 3) :</label>
           <select id="counterOrder" class="w-full bg-gray-700 text-white p-2 rounded">
             <option value="1">1</option>
             <option value="2">2</option>
@@ -77,14 +77,14 @@
           </select>
         </div>
         <div>
-          <label for="counterForRole" class="block mb-1">Rôle ciblé (du champion à counter) :</label>
+          <label for="counterForRole" class="block mb-1">Targeted role (from champion to counter) :</label>
           <select id="counterForRole" class="w-full bg-gray-700 text-white p-2 rounded">
             <!-- rempli dynamiquement -->
           </select>
         </div>
         
         <div class="text-right">
-          <button type="submit" class="bg-green-600 hover:bg-green-700 px-4 py-2 rounded">✅ Ajouter</button>
+          <button type="submit" class="bg-green-600 hover:bg-green-700 px-4 py-2 rounded">✅ Add</button>
         </div>
       </form>
     </div>
