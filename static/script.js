@@ -1,5 +1,5 @@
-const ddragonURL = 'https://ddragon.leagueoflegends.com/cdn/15.16.1/data/fr_FR/champion.json';
-const iconBaseURL = 'https://ddragon.leagueoflegends.com/cdn/15.16.1/img/champion/';
+const ddragonURL = 'https://ddragon.leagueoflegends.com/cdn/15.23.1/data/fr_FR/champion.json';
+const iconBaseURL = 'https://ddragon.leagueoflegends.com/cdn/15.23.1/img/champion/';
 const searchInput = document.getElementById('searchInput');
 const championList = document.getElementById('championList');
 let allChampions = [];
