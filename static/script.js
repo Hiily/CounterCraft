@@ -20,8 +20,8 @@ let selectedRoleFilter = null;     // Filtre champions
 let defaultRoleSelection = null;   // Rôle par défaut pour modal
 let selectedCounterRole = null;    // Rôle sélectionné dans modal
 
-//const apiUrl = "https://countercraft.onrender.com";
-const apiUrl = "http://localhost:8001";
+const apiUrl = "https://countercraft.onrender.com";
+//const apiUrl = "http://localhost:8001";
 
 // ==============================
 // CHARGEMENT DES DONNÉES
