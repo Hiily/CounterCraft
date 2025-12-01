@@ -11,6 +11,7 @@ let championRoles = {};
 let selectedRoleFilter = null;     // Filtre champions
 let defaultRoleSelection = null;   // Rôle par défaut pour modal
 let selectedCounterRole = null;    // Rôle sélectionné dans modal
+
 const apiUrl = "https://countercraft.onrender.com";
 //const apiUrl = "http://localhost:8001";
 
@@ -261,7 +262,7 @@ function activateCounterRoleListeners() {
 
   // reset visuel
   icons.forEach(i => {
-    i.classList.add("opacity-60");
+    i.classList.add("opacity-60", "border-transparent");
     i.classList.remove("border-emerald-500", "opacity-100");
     i.style.pointerEvents = "auto";
   });
@@ -290,11 +291,11 @@ function activateCounterRoleListeners() {
 
 function selectCounterRoleIcon(icon) {
   document.querySelectorAll(".counter-role").forEach(i => {
-    i.classList.add("opacity-60");
+    i.classList.add("opacity-60", "border-transparent");
     i.classList.remove("border-emerald-500", "opacity-100");
   });
 
-  icon.classList.remove("opacity-60");
+  icon.classList.remove("opacity-60", "border-transparent");
   icon.classList.add("border-emerald-500", "opacity-100");
 
   selectedCounterRole = icon.dataset.role;
