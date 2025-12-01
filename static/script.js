@@ -1,26 +1,31 @@
 const ddragonURL = 'https://ddragon.leagueoflegends.com/cdn/15.23.1/data/fr_FR/champion.json';
 const iconBaseURL = 'https://ddragon.leagueoflegends.com/cdn/15.23.1/img/champion/';
+
 const searchInput = document.getElementById('searchInput');
 const championList = document.getElementById('championList');
+const modal = document.getElementById('modal');
+const addCounterModal = document.getElementById('addCounterModal');
+const modalCounters = document.getElementById('modalCounters');
+const counterChampion = document.getElementById('counterChampion');
+const addCounterBtn = document.getElementById('addCounterBtn');
+const addCounterForm = document.getElementById('addCounterForm');
+const counterNote = document.getElementById('counterNote');
+const counterOrder = document.getElementById('counterOrder');
+
 let allChampions = [];
-let selectedRole = null;
 let championRoles = {};
 
-// Elements pour les modals
-const modal = document.getElementById('modal');
-const modalChampionIcon = document.getElementById('modalChampionIcon');
-const modalCounters = document.getElementById('modalCounters');
-const addCounterBtn = document.getElementById('addCounterBtn');
+// 🎯 Séparation des filtres
+let selectedRoleFilter = null;     // Filtre champions
+let defaultRoleSelection = null;   // Rôle par défaut pour modal
+let selectedCounterRole = null;    // Rôle sélectionné dans modal
 
-const addCounterModal = document.getElementById('addCounterModal');
-const counterChampionSelect = document.getElementById('counterChampion');
-const counterNoteInput = document.getElementById('counterNote');
-const counterOrderSelect = document.getElementById('counterOrder');
-const addCounterForm = document.getElementById('addCounterForm');
+//const apiUrl = "https://countercraft.onrender.com";
+const apiUrl = "http://localhost:8001";
 
-let selectedChampion = null;
-let fakeCounters = {}; 
-const apiUrl = "https://countercraft.onrender.com";
+// ==============================
+// CHARGEMENT DES DONNÉES
+// ==============================
 
 async function loadChampionRoles() {
   const res = await fetch('/static/championRoles.json');
@@ -35,54 +40,134 @@ async function loadChampions() {
   populateCounterSelect();
 }
 
-function updateChampionList() {
-  const search = searchInput.value.toLowerCase();
-  const filtered = allChampions.filter(champ => {
-    const matchesSearch = champ.name.toLowerCase().includes(search);
-    const roles = championRoles[champ.id] || [];
-    const matchesRole = !selectedRole || roles.includes(selectedRole);
-    return matchesSearch && matchesRole;
-  });
+// ==============================
+// FILTRE 1 : CHAMPIONS
+// ==============================
 
-  championList.innerHTML = filtered.map(champ => `
-    <div class="text-center cursor-pointer" onclick="openModal('${champ.id}')">
-      <img src="${iconBaseURL + champ.image.full}" alt="${champ.name}" class="w-16 mx-auto rounded" />
-      <p class="text-sm mt-1">${champ.name}</p>
-    </div>
-  `).join('');
-}
-
-async function deleteCounter(champion, counterName, role) {
-  const confirmed = confirm(`Supprimer ${counterName} comme counter (${role}) ?`);
-  if (!confirmed) return;
-
-  await fetch(`${apiUrl}/counters/${champion}/${counterName}/${role}`, {
-    method: "DELETE"
-  });
-
-  renderCounters(champion);
-}
-
-
-document.querySelectorAll('.role-icon').forEach(icon => {
+document.querySelectorAll('.role-filter').forEach(icon => {
   icon.addEventListener('click', () => {
-    document.querySelectorAll('.role-icon').forEach(i => i.classList.remove('active'));
-    icon.classList.add('active');
-    selectedRole = icon.dataset.role;
+    const role = icon.dataset.role;
+    
+    // Si on clique sur le filtre déjà actif, on le désélectionne
+    if (selectedRoleFilter === role) {
+      // Reset à "All"
+      selectedRoleFilter = null;
+      document.querySelectorAll('.role-filter').forEach(i => {
+        i.classList.remove('border-emerald-500', 'active');
+        i.classList.add('border-transparent');
+      });
+      // Réactiver le "All"
+      document.querySelector('.role-filter[data-role=""]').classList.add('border-emerald-500', 'active');
+      document.querySelector('.role-filter[data-role=""]').classList.remove('border-transparent');
+      document.getElementById('clearRoleFilter').classList.add('hidden');
+    } else {
+      // Sinon on sélectionne le nouveau filtre
+      selectedRoleFilter = role;
+      
+      document.querySelectorAll('.role-filter').forEach(i => {
+        i.classList.remove('border-emerald-500', 'active');
+        i.classList.add('border-transparent');
+      });
+      
+      icon.classList.remove('border-transparent');
+      icon.classList.add('border-emerald-500', 'active');
+      
+      // Afficher le bouton de réinitialisation sauf si c'est "All"
+      if (role === '') {
+        document.getElementById('clearRoleFilter').classList.add('hidden');
+      } else {
+        document.getElementById('clearRoleFilter').classList.remove('hidden');
+      }
+    }
+    
     updateChampionList();
   });
 });
 
+// Bouton de réinitialisation
+document.getElementById('clearRoleFilter').addEventListener('click', () => {
+  selectedRoleFilter = null;
+  
+  document.querySelectorAll('.role-filter').forEach(i => {
+    i.classList.remove('border-emerald-500', 'active');
+    i.classList.add('border-transparent');
+  });
+  
+  // Réactiver le "All"
+  document.querySelector('.role-filter[data-role=""]').classList.add('border-emerald-500', 'active');
+  document.querySelector('.role-filter[data-role=""]').classList.remove('border-transparent');
+  
+  document.getElementById('clearRoleFilter').classList.add('hidden');
+  updateChampionList();
+});
+
+function updateChampionList() {
+  const search = searchInput.value.toLowerCase();
+
+  const filtered = allChampions.filter(champ => {
+    const matchesSearch = champ.name.toLowerCase().includes(search);
+    const roles = championRoles[champ.id] || [];
+    const matchesRole = !selectedRoleFilter || roles.includes(selectedRoleFilter);
+    return matchesSearch && matchesRole;
+  });
+
+  championList.innerHTML = filtered.map(champ => `
+    <div class="champion-card text-center cursor-pointer group" onclick="openModal('${champ.id}')">
+      <div class="relative">
+        <img 
+          src="${iconBaseURL + champ.image.full}" 
+          class="w-full aspect-square rounded-lg shadow-lg transition-all border-2 border-gray-700 group-hover:border-emerald-500/60 group-hover:shadow-emerald-500/30" 
+        />
+      </div>
+      <p class="text-[10px] sm:text-xs mt-1 font-medium text-gray-300 group-hover:text-emerald-400 transition-colors truncate px-1">${champ.name}</p>
+    </div>
+  `).join('');
+}
+
 searchInput.addEventListener('input', updateChampionList);
+
+// ==============================
+// FILTRE 2 : ROLE PAR DÉFAUT
+// ==============================
+
+document.querySelectorAll('.default-role').forEach(icon => {
+  icon.addEventListener('click', () => {
+    const role = icon.dataset.role;
+    
+    // Toggle : si déjà sélectionné, on désélectionne
+    if (defaultRoleSelection === role) {
+      icon.classList.remove('border-cyan-500', 'opacity-100');
+      icon.classList.add('border-transparent', 'opacity-60');
+      defaultRoleSelection = null;
+    } else {
+      // Sinon on désélectionne tout et on sélectionne celui-ci
+      document.querySelectorAll('.default-role').forEach(i => {
+        i.classList.remove('border-cyan-500', 'opacity-100');
+        i.classList.add('border-transparent', 'opacity-60');
+      });
+      
+      icon.classList.remove('border-transparent', 'opacity-60');
+      icon.classList.add('border-cyan-500', 'opacity-100');
+      defaultRoleSelection = role;
+    }
+  });
+});
+
+// ==============================
+// MODAL CHAMPION
+// ==============================
+
+let selectedChampion = null;
 
 function openModal(championId) {
   const champ = allChampions.find(c => c.id === championId);
   selectedChampion = champ;
 
-  modalChampionIcon.src = iconBaseURL + champ.image.full;
-  modalChampionIcon.alt = champ.name;
+  document.getElementById('modalChampionIcon').src = iconBaseURL + champ.image.full;
+  document.getElementById('modalChampionName').textContent = champ.name;
 
   renderCounters(champ.name);
+
   modal.classList.remove('hidden');
   modal.classList.add('flex');
 }
@@ -92,167 +177,222 @@ function closeModal() {
   modal.classList.remove('flex');
 }
 
+// ==============================
+// RÉCUPÉRATION COUNTERS
+// ==============================
+
 async function renderCounters(championName) {
-  const res = await fetch(`${apiUrl}/counters/${championName}`);
-  const counters = await res.json();
+  try {
+    const res = await fetch(`${apiUrl}/counters/${championName}`);
+    const counters = await res.json();
 
-  // Grouper les counters par rôle
-  const grouped = {};
-  for (const counter of counters) {
-    const role = counter.role || "Autre";
-    if (!grouped[role]) grouped[role] = [];
-    grouped[role].push(counter);
-  }
+    const grouped = {};
 
-  // Construire l'affichage
-  modalCounters.innerHTML = Object.entries(grouped)
-  .map(([role, roleCounters]) => {
-    const iconRole = ["Top", "Jungle", "Mid", "Bot", "Support"].includes(role) ? role : "All";
-    return `
-      <div class="mb-4">
-        <div class="flex items-center gap-2 mb-2">
-          <img src="/static/icon/${iconRole}.png" alt="${role}" class="w-6 h-6" />
+    for (const c of counters) {
+      const role = c.role || "All";
+      if (!grouped[role]) grouped[role] = [];
+      grouped[role].push(c);
+    }
+
+    modalCounters.innerHTML = Object.entries(grouped).map(([role, list]) => `
+      <div class="bg-gray-700/30 rounded-xl p-4 border border-gray-600/50">
+        <div class="flex items-center gap-2 mb-3">
+          <img src="/static/icon/${role}.png" class="w-8 h-8" />
+          <h3 class="font-semibold text-lg text-emerald-400">${role}</h3>
         </div>
-        ${roleCounters
-          .sort((a, b) => a.rank - b.rank)
-          .map(counter => `
-            <div class="flex items-center justify-between bg-gray-700 p-2 rounded mb-2">
-              <div class="flex items-center">
-                <img src="${iconBaseURL + counter.name + '.png'}" alt="${counter.name}" class="w-10 h-10 rounded mr-3" />
+        <div class="space-y-2">
+          ${list.sort((a,b)=>a.rank-b.rank).map(counter => `
+            <div class="counter-item flex items-center justify-between bg-gray-800/50 p-3 rounded-lg border border-gray-700/50">
+              <div class="flex items-center gap-3">
+                <img src="${iconBaseURL + counter.name + '.png'}" 
+                  class="w-12 h-12 rounded-lg border-2 border-gray-600" 
+                  onerror="this.src='${iconBaseURL}Aatrox.png'" />
                 <div>
-                  <p class="font-semibold">${counter.name}</p>
-                  ${counter.comment ? `<p class="text-sm text-gray-300">${counter.comment}</p>` : ''}
+                  <p class="font-semibold text-white">${counter.name}</p>
+                  ${counter.comment ? `<p class="text-sm text-gray-400">${counter.comment}</p>` : ''}
                 </div>
               </div>
-              <button onclick="deleteCounter('${selectedChampion.name}', '${counter.name}', '${role}')" class="text-red-400 hover:text-red-600 text-lg">✖</button>
+              <button onclick="deleteCounter('${selectedChampion.name}', '${counter.name}', '${role}')"
+                class="text-red-400 hover:text-red-300 hover:bg-red-500/10 transition-all p-2 rounded-lg">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+              </button>
             </div>
           `).join('')}
+        </div>
+      </div>
+    `).join('');
+  } catch (error) {
+    modalCounters.innerHTML = `
+      <div class="text-center text-gray-400 py-8">
+        <p class="text-lg mb-2">No counters saved</p>
+        <p class="text-sm">Add one with the button above!</p>
       </div>
     `;
-  }).join('');
-
+  }
 }
 
+async function deleteCounter(champion, counterName, role) {
+  if (!confirm(`Delete ${counterName} (${role})?`)) return;
+  
+  try {
+    await fetch(`${apiUrl}/counters/${champion}/${counterName}/${role}`, { method: "DELETE" });
+    renderCounters(champion);
+  } catch (error) {
+    alert("Error while deleting");
+  }
+}
 
+// ==============================
+// SELECT CHAMPION POUR AJOUT
+// ==============================
+
+function populateCounterSelect() {
+  counterChampion.innerHTML = allChampions.map(c => `
+    <option value="${c.id}" data-url="${iconBaseURL + c.image.full}">${c.name}</option>
+  `).join('');
+
+  new TomSelect('#counterChampion', {
+    maxOptions: 999,
+    render: {
+      option: (data, esc) =>
+        `<div class="flex items-center gap-2 p-2">
+          <img src="${esc(data.url)}" class="w-8 h-8 rounded" onerror="this.src='${iconBaseURL}Aatrox.png'"/>
+          <span>${esc(data.text)}</span>
+        </div>`,
+      item: (data, esc) =>
+        `<div class="flex items-center gap-2">
+          <img src="${esc(data.url)}" class="w-6 h-6 rounded" onerror="this.src='${iconBaseURL}Aatrox.png'"/>
+          <span>${esc(data.text)}</span>
+        </div>`
+    }
+  });
+}
+
+// ==============================
+// ICÔNES DE RÔLE DANS LE MODAL
+// ==============================
+
+function updateCounterForRoleOptions() {
+  const container = document.getElementById("counterRoleIcons");
+  const roles = championRoles[selectedChampion.id] || [];
+
+  container.innerHTML = roles.map(role => `
+    <img src="/static/icon/${role}.png" 
+         data-role="${role}"
+         alt="${role}"
+         class="counter-role role-icon w-14 h-14 p-2 rounded-xl bg-gray-700/50 border-2 border-transparent opacity-60 hover:opacity-100 transition-all cursor-pointer" />
+  `).join('');
+
+  activateCounterRoleListeners();
+}
+
+function activateCounterRoleListeners() {
+  const icons = document.querySelectorAll(".counter-role");
+
+  // Reset visuel
+  icons.forEach(i => {
+    i.classList.remove('border-emerald-500', 'opacity-100');
+    i.classList.add('border-transparent', 'opacity-60');
+    i.style.pointerEvents = "auto";
+  });
+
+  // 🎯 Si un seul rôle disponible, le sélectionner automatiquement
+  if (icons.length === 1) {
+    selectCounterRoleIcon(icons[0]);
+    icons[0].style.pointerEvents = "none";
+    return;
+  }
+
+  // 🎯 Pré-sélection selon rôle par défaut
+  if (defaultRoleSelection) {
+    const target = [...icons].find(i => i.dataset.role === defaultRoleSelection);
+    if (target) {
+      selectCounterRoleIcon(target);
+      // Verrouiller les autres icônes
+      icons.forEach(i => { 
+        if (i !== target) i.style.pointerEvents = "none"; 
+      });
+    }
+  }
+
+  // Sélection libre
+  icons.forEach(icon => {
+    icon.addEventListener("click", () => selectCounterRoleIcon(icon));
+  });
+}
+
+function selectCounterRoleIcon(icon) {
+  document.querySelectorAll(".counter-role").forEach(i => {
+    i.classList.remove('border-emerald-500', 'opacity-100');
+    i.classList.add('border-transparent', 'opacity-60');
+  });
+
+  icon.classList.remove('border-transparent', 'opacity-60');
+  icon.classList.add('border-emerald-500', 'opacity-100');
+
+  selectedCounterRole = icon.dataset.role;
+}
+
+// ==============================
+// AJOUT COUNTER
+// ==============================
 
 addCounterBtn.addEventListener('click', () => {
-  counterNoteInput.value = '';
-  counterOrderSelect.value = '1';
+  counterNote.value = '';
+  counterOrder.value = '1';
+  selectedCounterRole = null;
 
   updateCounterForRoleOptions();
+
   addCounterModal.classList.remove('hidden');
   addCounterModal.classList.add('flex');
 });
-
-function updateCounterForRoleOptions() {
-  const roleSelect = document.getElementById('counterForRole');
-  const roles = championRoles[selectedChampion.id] || [];
-
-  roleSelect.innerHTML = roles.map(role => `
-    <option value="${role}">${role}</option>
-  `).join('');
-}
 
 function closeAddCounterModal() {
   addCounterModal.classList.add('hidden');
   addCounterModal.classList.remove('flex');
 }
 
-function populateCounterSelect() {
-  counterChampionSelect.innerHTML = allChampions.map(champ => `
-    <option value="${champ.id}" data-url="${iconBaseURL + champ.image.full}">${champ.name}</option>
-  `).join('');
-
-  new TomSelect('#counterChampion', {
-    maxOptions: 999,
-    render: {
-      option: function(data, escape) {
-        return `<div class="flex items-center">
-          <img src="${escape(data.url)}" class="w-5 h-5 mr-2 rounded" />
-          <span>${escape(data.text)}</span>
-        </div>`;
-      },
-      item: function(data, escape) {
-        return `<div class="flex items-center">
-          <img src="${escape(data.url)}" class="w-5 h-5 mr-2 rounded" />
-          <span>${escape(data.text)}</span>
-        </div>`;
-      }
-    }
-  });
-}
-
 addCounterForm.addEventListener('submit', async (e) => {
   e.preventDefault();
 
-  const counterName = counterChampionSelect.value;
-  const counterText = counterNoteInput.value.trim();
-  const rank = parseInt(counterOrderSelect.value);
-  const role = document.getElementById('counterForRole').value;
+  if (!selectedCounterRole) {
+    alert("Select a role!");
+    return;
+  }
 
   const payload = {
-    name: counterName,
-    comment: counterText,
-    rank,
-    role
+    name: counterChampion.value,
+    comment: counterNote.value.trim(),
+    rank: parseInt(counterOrder.value),
+    role: selectedCounterRole
   };
-  
 
   try {
-    const response = await fetch(`${apiUrl}/counters/${selectedChampion.name}`, {
+    const res = await fetch(`${apiUrl}/counters/${selectedChampion.name}`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload)
     });
 
-    if (!response.ok) {
-      const errorData = await response.json();
-      console.error("❌ Erreur API :", errorData);
-      alert("Erreur lors de l'enregistrement du counter !");
-      return;
+    if (!res.ok) {
+      throw new Error('Erreur API');
     }
 
     closeAddCounterModal();
     renderCounters(selectedChampion.name);
-
   } catch (error) {
-    console.error("❌ Erreur réseau :", error);
-    alert("Erreur de communication avec le serveur.");
+    alert("Error while adding counter");
   }
 });
 
-// 🔁 Appel initial (on attend les rôles puis on charge les champions)
+// ==============================
+// INIT
+// ==============================
+
 (async () => {
   await loadChampionRoles();
   await loadChampions();
 })();
-
-document.querySelectorAll('.role-icon').forEach(icon => {
-  icon.addEventListener('click', () => {
-    document.querySelectorAll('.role-icon').forEach(i => {
-      i.classList.remove(
-        "bg-emerald-600",
-        "bg-opacity-20",
-        "ring-2",
-        "ring-emerald-400",
-        "rounded-lg",
-        "p-1",
-        "scale-105"
-      );
-    });
-
-    icon.classList.add(
-      "bg-emerald-600",
-      "bg-opacity-20",
-      "ring-2",
-      "ring-emerald-400",
-      "rounded-lg",
-      "p-1",
-      "scale-105"
-    );
-
-    selectedRole = icon.dataset.role;
-    updateChampionList();
-  });
-});
-

@@ -3,90 +3,270 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Counter craft</title>
+  <title>CounterCraft - League of Legends</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
-    tailwind.config = {
-      darkMode: 'class',
-    }
+    tailwind.config = { darkMode: 'class' }
   </script>
   <link href="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/css/tom-select.css" rel="stylesheet">
-  <script src="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/js/tom-select.complete.min.js"></script>  
-  <link rel="stylesheet" href="/static/style.css">
+  <script src="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/js/tom-select.complete.min.js"></script>
+  <style>
+    .role-icon {
+      transition: all 0.2s ease-in-out;
+      cursor: pointer;
+    }
+    
+    .role-icon:hover {
+      transform: translateY(-2px);
+      filter: brightness(1.2);
+    }
+    
+    .role-icon.active {
+      box-shadow: 0 0 20px rgba(16, 185, 129, 0.5);
+    }
+    
+    .champion-card {
+      transition: all 0.2s ease-in-out;
+    }
+    
+    .champion-card:hover {
+      transform: translateY(-4px);
+    }
+    
+    .modal-backdrop {
+      backdrop-filter: blur(8px);
+      animation: fadeIn 0.2s ease-in-out;
+    }
+    
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+    
+    .ts-wrapper {
+      background: #1f2937 !important;
+    }
+    
+    .ts-dropdown {
+      background: #111827 !important;
+      border: 1px solid #4b5563 !important;
+    }
+    
+    .ts-dropdown .option {
+      color: #ffffff !important;
+      background: #1f2937 !important;
+    }
+    
+    .ts-dropdown .option:hover,
+    .ts-dropdown .option.active {
+      background: #374151 !important;
+      color: #10b981 !important;
+    }
+    
+    .ts-control {
+      background: #1f2937 !important;
+      border: 1px solid #4b5563 !important;
+      color: #ffffff !important;
+    }
+    
+    .ts-control input {
+      color: #ffffff !important;
+    }
+    
+    .counter-item {
+      transition: all 0.2s ease;
+    }
+    
+    .counter-item:hover {
+      background: rgba(16, 185, 129, 0.1);
+      border-color: rgba(16, 185, 129, 0.3);
+    }
+  </style>
   <link rel="icon" type="image/x-icon" href="/static/favicon.webp">
 </head>
-<body class="bg-gray-900 text-white p-6">
-  <div class="max-w-5xl mx-auto">
-    <h1 class="text-3xl font-bold mb-6">🔍 Search for champions</h1>
 
-    <input id="searchInput" type="text" placeholder="Tape un nom..."
-      class="w-full mb-4 p-2 rounded bg-gray-800 text-white" />
+<body class="bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 text-white min-h-screen">
 
-      <div class="flex justify-around mb-6">
-        <img src="/static/icon/All.png" alt="All"
-     class="role-icon w-12 bg-emerald-600 bg-opacity-20 ring-2 ring-emerald-400 rounded-lg p-1 scale-105"
-     data-role="" />
-        <img src="/static/icon/Top.png" alt="Top" class="role-icon w-12" data-role="Top" />
-        <img src="/static/icon/Jungle.png" alt="Jungle" class="role-icon w-12" data-role="Jungle" />
-        <img src="/static/icon/Mid.png" alt="Mid" class="role-icon w-12" data-role="Mid" />
-        <img src="/static/icon/Bot.png" alt="ADC" class="role-icon w-12" data-role="Bot" />
-        <img src="/static/icon/Support.png" alt="Support" class="role-icon w-12" data-role="Support" />
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 py-8">
+
+    <!-- Header -->
+    <div class="mb-8">
+      <h1 class="text-4xl sm:text-5xl font-bold bg-gradient-to-r from-emerald-400 to-cyan-400 bg-clip-text text-transparent mb-2">
+        ⚔️ CounterCraft
+      </h1>
+      <p class="text-gray-400 text-sm sm:text-base">Find the best counters for your matchups</p>
+    </div>
+
+    <!-- Search Bar -->
+    <div class="mb-6">
+      <div class="relative">
+        <svg class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+        </svg>
+        <input 
+          id="searchInput" 
+          type="text" 
+          placeholder="Search for a champion..." 
+          class="w-full p-4 pl-12 rounded-xl bg-gray-800/80 border border-gray-700 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 focus:outline-none transition-all text-white placeholder-gray-500"
+        />
+      </div>
+    </div>
+
+    <!-- Filters Section -->
+    <div class="bg-gray-800/40 backdrop-blur-sm rounded-2xl p-6 mb-8 border border-gray-700/50">
+      
+      <!-- Champion Role Filter -->
+      <div class="mb-6">
+        <div class="flex items-center justify-between mb-4">
+          <h2 class="text-lg font-semibold text-gray-200 flex items-center gap-2">
+            <span class="text-emerald-400">🎯</span>
+            Filter champions
+          </h2>
+          <button 
+            id="clearRoleFilter" 
+            class="text-sm text-emerald-400 hover:text-emerald-300 transition-colors px-3 py-1 rounded-lg bg-emerald-500/10 hover:bg-emerald-500/20 hidden"
+          >
+            ✕ Reset
+          </button>
+        </div>
+        
+        <div id="championRoleFilter" class="flex gap-3 flex-wrap">
+          <img src="/static/icon/All.png" alt="All" 
+            class="role-filter role-icon w-14 h-14 p-2 rounded-xl bg-gray-700/50 border-2 border-emerald-500 active" 
+            data-role="" />
+          <img src="/static/icon/Top.png" alt="Top" 
+            class="role-filter role-icon w-14 h-14 p-2 rounded-xl bg-gray-700/50 border-2 border-transparent" 
+            data-role="Top">
+          <img src="/static/icon/Jungle.png" alt="Jungle" 
+            class="role-filter role-icon w-14 h-14 p-2 rounded-xl bg-gray-700/50 border-2 border-transparent" 
+            data-role="Jungle">
+          <img src="/static/icon/Mid.png" alt="Mid" 
+            class="role-filter role-icon w-14 h-14 p-2 rounded-xl bg-gray-700/50 border-2 border-transparent" 
+            data-role="Mid">
+          <img src="/static/icon/Bot.png" alt="Bot" 
+            class="role-filter role-icon w-14 h-14 p-2 rounded-xl bg-gray-700/50 border-2 border-transparent" 
+            data-role="Bot">
+          <img src="/static/icon/Support.png" alt="Support" 
+            class="role-filter role-icon w-14 h-14 p-2 rounded-xl bg-gray-700/50 border-2 border-transparent" 
+            data-role="Support">
+        </div>
       </div>
 
-    <div id="championList" class="grid grid-cols-6 gap-4"></div>
+      <!-- Default Role for Counter -->
+      <div>
+        <h2 class="text-lg font-semibold text-gray-200 mb-4 flex items-center gap-2">
+          <span class="text-cyan-400">⚡</span>
+          Default role for counters
+        </h2>
+        <div id="defaultRoleFilter" class="flex gap-3 flex-wrap">
+          <img src="/static/icon/Top.png" alt="Top" 
+            class="default-role role-icon w-14 h-14 p-2 rounded-xl bg-gray-700/50 border-2 border-transparent opacity-60 hover:opacity-100" 
+            data-role="Top">
+          <img src="/static/icon/Jungle.png" alt="Jungle" 
+            class="default-role role-icon w-14 h-14 p-2 rounded-xl bg-gray-700/50 border-2 border-transparent opacity-60 hover:opacity-100" 
+            data-role="Jungle">
+          <img src="/static/icon/Mid.png" alt="Mid" 
+            class="default-role role-icon w-14 h-14 p-2 rounded-xl bg-gray-700/50 border-2 border-transparent opacity-60 hover:opacity-100" 
+            data-role="Mid">
+          <img src="/static/icon/Bot.png" alt="Bot" 
+            class="default-role role-icon w-14 h-14 p-2 rounded-xl bg-gray-700/50 border-2 border-transparent opacity-60 hover:opacity-100" 
+            data-role="Bot">
+          <img src="/static/icon/Support.png" alt="Support" 
+            class="default-role role-icon w-14 h-14 p-2 rounded-xl bg-gray-700/50 border-2 border-transparent opacity-60 hover:opacity-100" 
+            data-role="Support">
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Champions Grid -->
+    <div id="championList" class="grid grid-cols-5 sm:grid-cols-7 md:grid-cols-9 lg:grid-cols-11 xl:grid-cols-14 gap-2"></div>
+
   </div>
 
-  <!-- Modal principal -->
-  <div id="modal" class="fixed inset-0 bg-black bg-opacity-60 hidden items-center justify-center z-50">
-    <div class="bg-gray-800 p-6 rounded-lg max-w-lg w-full relative">
-      <button onclick="closeModal()" class="absolute top-2 right-2 text-white">✖</button>
-      <div class="flex items-center mb-4">
-        <img id="modalChampionIcon" src="" alt="Champion" class="w-16 h-16 rounded" />
-        <button id="addCounterBtn" class="ml-4 bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded">
-          ➕ Add counter
-        </button>
-      </div>
-      <div id="modalCounters" class="space-y-2">
-        <!-- List of counters ici -->
+  <!-- Main Modal -->
+  <div id="modal" class="fixed inset-0 bg-black/80 modal-backdrop hidden items-center justify-center z-50 p-4">
+    <div class="bg-gradient-to-br from-gray-800 via-gray-800 to-gray-900 rounded-2xl max-w-3xl w-full relative shadow-2xl border border-gray-700/50 max-h-[90vh] overflow-y-auto">
+      
+      <button onclick="closeModal()" class="absolute top-4 right-4 text-gray-400 hover:text-white transition-colors z-10 bg-gray-700/50 rounded-lg p-2 hover:bg-gray-700">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+        </svg>
+      </button>
+
+      <div class="p-6 sm:p-8">
+        <div class="flex items-center gap-4 mb-6 pb-6 border-b border-gray-700/50">
+          <img id="modalChampionIcon" class="w-20 h-20 sm:w-24 sm:h-24 rounded-xl shadow-lg border-2 border-emerald-500/30" />
+          <div class="flex-1">
+            <h2 id="modalChampionName" class="text-2xl sm:text-3xl font-bold text-white"></h2>
+          </div>
+          <button id="addCounterBtn" class="bg-gradient-to-r from-emerald-600 to-cyan-600 hover:from-emerald-700 hover:to-cyan-700 px-4 sm:px-6 py-3 rounded-xl font-semibold transition-all shadow-lg hover:shadow-emerald-500/20 text-sm sm:text-base">
+            ➕ Add
+          </button>
+        </div>
+
+        <div id="modalCounters" class="space-y-4"></div>
       </div>
     </div>
   </div>
 
-  <!-- Modal pour ajouter un counter -->
-  <div id="addCounterModal" class="fixed inset-0 bg-black bg-opacity-60 hidden items-center justify-center z-50">
-    <div class="bg-gray-800 p-6 rounded-lg max-w-md w-full relative">
-      <button onclick="closeAddCounterModal()" class="absolute top-2 right-2 text-white">✖</button>
-      <h2 class="text-xl font-bold mb-4">Add counter</h2>
-      <form id="addCounterForm" class="space-y-4">
-        <div>
-          <label for="counterChampion" class="block mb-1">Champion's counter :</label>
-          <select id="counterChampion" class="w-full bg-gray-700 text-white p-2 rounded">
-            <!-- Options remplies dynamiquement -->
-          </select>
-        </div>
-        <div>
-          <label for="counterNote" class="block mb-1">Note :</label>
-          <input maxlength="44" type="text" id="counterNote" class="w-full bg-gray-700 text-white p-2 rounded" placeholder="Pourquoi c'est un counter ?" />
-        </div>
-        <div>
-          <label for="counterOrder" class="block mb-1">Order (1 to 3) :</label>
-          <select id="counterOrder" class="w-full bg-gray-700 text-white p-2 rounded">
-            <option value="1">1</option>
-            <option value="2">2</option>
-            <option value="3">3</option>
-          </select>
-        </div>
-        <div>
-          <label for="counterForRole" class="block mb-1">Targeted role (from champion to counter) :</label>
-          <select id="counterForRole" class="w-full bg-gray-700 text-white p-2 rounded">
-            <!-- rempli dynamiquement -->
-          </select>
-        </div>
-        
-        <div class="text-right">
-          <button type="submit" class="bg-green-600 hover:bg-green-700 px-4 py-2 rounded">✅ Add</button>
-        </div>
-      </form>
+  <!-- Add Counter Modal -->
+  <div id="addCounterModal" class="fixed inset-0 bg-black/80 modal-backdrop hidden items-center justify-center z-50 p-4">
+    <div class="bg-gradient-to-br from-gray-800 via-gray-800 to-gray-900 rounded-2xl max-w-md w-full relative shadow-2xl border border-gray-700/50">
+      
+      <button onclick="closeAddCounterModal()" class="absolute top-4 right-4 text-gray-400 hover:text-white transition-colors bg-gray-700/50 rounded-lg p-2 hover:bg-gray-700">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+        </svg>
+      </button>
+
+      <div class="p-6 sm:p-8">
+        <h2 class="text-2xl font-bold mb-6 bg-gradient-to-r from-emerald-400 to-cyan-400 bg-clip-text text-transparent">
+          Add a counter
+        </h2>
+
+        <form id="addCounterForm" class="space-y-5">
+
+          <div>
+            <label class="block text-sm font-medium text-gray-300 mb-2">Counter champion</label>
+            <select id="counterChampion" class="w-full bg-gray-700 text-white p-3 rounded-xl border border-gray-600 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 focus:outline-none"></select>
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-gray-300 mb-2">Note (optional)</label>
+            <input 
+              maxlength="44" 
+              id="counterNote"
+              class="w-full bg-gray-700 text-white p-3 rounded-xl border border-gray-600 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 focus:outline-none transition-colors"
+              placeholder="Why is it a counter?" 
+            />
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-gray-300 mb-2">Priority order</label>
+            <select id="counterOrder" class="w-full bg-gray-700 text-white p-3 rounded-xl border border-gray-600 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 focus:outline-none">
+              <option value="1">1</option>
+              <option value="2">2</option>
+              <option value="3">3</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-gray-300 mb-2">Target role</label>
+            <div id="counterRoleIcons" class="flex flex-wrap gap-2 mt-2"></div>
+          </div>
+
+          <div class="flex gap-3 pt-4">
+            <button type="button" onclick="closeAddCounterModal()" class="flex-1 bg-gray-700 hover:bg-gray-600 px-4 py-3 rounded-xl font-semibold transition-colors">
+              Cancel
+            </button>
+            <button type="submit" class="flex-1 bg-gradient-to-r from-emerald-600 to-cyan-600 hover:from-emerald-700 hover:to-cyan-700 px-4 py-3 rounded-xl font-semibold transition-all shadow-lg">
+              ✅ Add
+            </button>
+          </div>
+
+        </form>
+      </div>
     </div>
   </div>
 
