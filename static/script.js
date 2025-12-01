@@ -276,6 +276,18 @@ function populateCounterSelect() {
 
 function updateCounterForRoleOptions() {
   const container = document.getElementById("counterRoleIcons");
+  
+  // Vérification de sécurité
+  if (!container) {
+    console.error("counterRoleIcons not found");
+    return;
+  }
+  
+  if (!selectedChampion) {
+    console.error("No champion selected");
+    return;
+  }
+  
   const roles = championRoles[selectedChampion.id] || [];
 
   container.innerHTML = roles.map(role => `
@@ -344,10 +356,14 @@ addCounterBtn.addEventListener('click', () => {
   counterOrder.value = '1';
   selectedCounterRole = null;
 
-  updateCounterForRoleOptions();
-
+  // Afficher le modal D'ABORD
   addCounterModal.classList.remove('hidden');
   addCounterModal.classList.add('flex');
+
+  // PUIS mettre à jour les rôles (après que le DOM soit visible)
+  setTimeout(() => {
+    updateCounterForRoleOptions();
+  }, 0);
 });
 
 function closeAddCounterModal() {
